@@ -13,12 +13,13 @@ import {
 
 function App() {
   const [dados, setDados] = useState([]);
+  const [contador, setContador] = useState(20); // contador regressivo
 
-  useEffect(() => {
+  // Função para buscar dados da API
+  const fetchDados = () => {
     axios
-        .get("https://clima-backend-xi.vercel.app/api/dados") // 🔁 Altere para seu domínio real
+        .get("https://clima-backend-xi.vercel.app/api/dados")
         .then((res) => {
-          // Converte tipos e formata timestamp
           const convertidos = res.data.map((item) => ({
             ...item,
             temp: parseFloat(item.temp),
@@ -29,16 +30,53 @@ function App() {
               month: "2-digit",
               hour: "2-digit",
               minute: "2-digit",
+              second: "2-digit",
             }),
           }));
           setDados(convertidos);
         })
         .catch((err) => console.error(err));
+  };
+
+  // Chamada inicial + agendamento do fetch e contador
+  useEffect(() => {
+    fetchDados(); // primeira chamada
+
+    const fetchInterval = setInterval(() => {
+      fetchDados();
+      setContador(20);
+    }, 20000);
+
+    const countdownInterval = setInterval(() => {
+      setContador((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => {
+      clearInterval(fetchInterval);
+      clearInterval(countdownInterval);
+    };
   }, []);
 
   return (
-      <div style={{ padding: "1rem", fontFamily: "sans-serif" }}>
+      <div style={{ padding: "1rem", fontFamily: "sans-serif", position: "relative" }}>
         <h2 style={{ textAlign: "center" }}>📊 Dados do ESP32</h2>
+
+        {/* Contador regressivo no canto superior direito */}
+        <div
+            style={{
+              position: "absolute",
+              top: 10,
+              right: 10,
+              background: "#eee",
+              padding: "0.5rem 1rem",
+              borderRadius: "8px",
+              fontWeight: "bold",
+              fontSize: "14px",
+            }}
+        >
+          ⏳ Atualiza em: {contador}s
+        </div>
+
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={dados}>
             <CartesianGrid strokeDasharray="3 3" />
