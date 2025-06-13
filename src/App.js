@@ -23,11 +23,10 @@ function App() {
                 .then((res) => {
                     const convertidos = res.data.map((item) => {
                         const ts = new Date(item.timestamp);
-                        const localDate = new Date(ts.getTime() - 3 * 60 * 60 * 1000);
                         return {
                             ...item,
                             timestampOriginal: item.timestamp,
-                            timestamp: localDate.toLocaleString("pt-BR", {
+                            timestamp: ts.toLocaleString("pt-BR", {
                                 day: "2-digit",
                                 month: "2-digit",
                                 hour: "2-digit",
