@@ -66,9 +66,10 @@ function App() {
         };
     }, [intervaloMinutos]);
 
-    const ultimo = dados[dados.length - 1];
+    const ultimo = dados[dados.length - 1] || {};
 
     const getStatus = (valor, min, max) => {
+        if (valor == null) return "sem_dado";
         if (valor >= min && valor <= max) return "ideal";
         if (valor < min) return "baixo";
         return "alto";
@@ -77,11 +78,13 @@ function App() {
     const getCor = (status) => {
         switch (status) {
             case "ideal":
-                return "#00c853"; // verde
+                return "#00c853";
             case "baixo":
-                return "#ffa000"; // laranja
+                return "#ffa000";
             case "alto":
-                return "#d32f2f"; // vermelho
+                return "#d32f2f";
+            case "sem_dado":
+                return "#9e9e9e";
             default:
                 return "#ccc";
         }
@@ -90,13 +93,12 @@ function App() {
     const media = (campo) =>
         dados.length
             ? (dados.reduce((acc, item) => acc + item[campo], 0) / dados.length).toFixed(1)
-            : "--";
+            : null;
 
     return (
         <div style={{ padding: "1rem", fontFamily: "sans-serif", position: "relative" }}>
             <h2 style={{ textAlign: "center" }}>📊 Dados do ESP32</h2>
 
-            {/* Contador regressivo */}
             <div
                 style={{
                     position: "absolute",
@@ -113,67 +115,66 @@ function App() {
                 ⏳ Atualiza em: {contador}s
             </div>
 
-            {/* Indicadores de conforto */}
-            {ultimo && (
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        gap: "1rem",
-                        marginBottom: "1rem",
-                        flexWrap: "wrap",
-                    }}
-                >
-                    {[
-                        {
-                            label: "🌡️ Temperatura",
-                            valor: ultimo.temp,
-                            unidade: "°C",
-                            status: getStatus(ultimo.temp, 18, 22),
-                        },
-                        {
-                            label: "💧 Umidade",
-                            valor: ultimo.umidade,
-                            unidade: "%",
-                            status: getStatus(ultimo.umidade, 40, 60),
-                        },
-                        {
-                            label: "💡 Luminosidade",
-                            valor: ultimo.light,
-                            unidade: "lux",
-                            status: getStatus(ultimo.light, 300, 600),
-                        },
-                    ].map((indicador) => (
-                        <div
-                            key={indicador.label}
-                            style={{
-                                background: getCor(indicador.status),
-                                color: "#fff",
-                                padding: "1rem",
-                                borderRadius: "8px",
-                                minWidth: "150px",
-                                textAlign: "center",
-                                boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-                                fontWeight: "bold",
-                            }}
-                        >
-                            <div>{indicador.label}</div>
-                            <div style={{ fontSize: "1.5rem" }}>
-                                {indicador.valor} {indicador.unidade}
-                            </div>
-                            <div style={{ fontSize: "0.9rem" }}>
-                                {indicador.status === "ideal"
-                                    ? "✅ Ideal"
-                                    : indicador.status === "baixo"
-                                        ? "⚠️ Baixo"
-                                        : "⚠️ Alto"}
-                            </div>
+            {/* Indicadores */}
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: "1rem",
+                    marginBottom: "1rem",
+                    flexWrap: "wrap",
+                }}
+            >
+                {[
+                    {
+                        label: "🌡️ Temperatura",
+                        valor: ultimo.temp,
+                        unidade: "°C",
+                        status: getStatus(ultimo.temp, 18, 22),
+                    },
+                    {
+                        label: "💧 Umidade",
+                        valor: ultimo.umidade,
+                        unidade: "%",
+                        status: getStatus(ultimo.umidade, 40, 60),
+                    },
+                    {
+                        label: "💡 Luminosidade",
+                        valor: ultimo.light,
+                        unidade: "lux",
+                        status: getStatus(ultimo.light, 300, 600),
+                    },
+                ].map((indicador) => (
+                    <div
+                        key={indicador.label}
+                        style={{
+                            background: getCor(indicador.status),
+                            color: "#fff",
+                            padding: "1rem",
+                            borderRadius: "8px",
+                            minWidth: "150px",
+                            textAlign: "center",
+                            boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                            fontWeight: "bold",
+                        }}
+                    >
+                        <div>{indicador.label}</div>
+                        <div style={{ fontSize: "1.5rem" }}>
+                            {indicador.valor != null ? `${indicador.valor} ${indicador.unidade}` : "sem dado"}
                         </div>
-                    ))}
-                </div>
-            )}
+                        <div style={{ fontSize: "0.9rem" }}>
+                            {{
+                                ideal: "✅ Ideal",
+                                baixo: "⚠️ Baixo",
+                                alto: "⚠️ Alto",
+                                sem_dado: "❓ Sem dado",
+                            }[indicador.status]}
+                        </div>
+                    </div>
+                ))}
+            </div>
 
-            {/* Botões de seleção de intervalo */}
+            {/* Botões */}
             <div
                 style={{
                     display: "flex",
@@ -217,56 +218,54 @@ function App() {
                 </LineChart>
             </ResponsiveContainer>
 
-            {/* Médias dos dados */}
-            {dados.length > 0 && (
+            {/* Médias */}
+            <div
+                style={{
+                    marginTop: "1rem",
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: "1rem",
+                    flexWrap: "wrap",
+                    fontWeight: "bold",
+                }}
+            >
                 <div
                     style={{
-                        marginTop: "1rem",
-                        display: "flex",
-                        justifyContent: "center",
-                        gap: "1rem",
-                        flexWrap: "wrap",
-                        fontWeight: "bold",
+                        background: "#fafafa",
+                        border: "1px solid #ddd",
+                        padding: "1rem",
+                        borderRadius: "8px",
+                        minWidth: "160px",
+                        textAlign: "center",
                     }}
                 >
-                    <div
-                        style={{
-                            background: "#fafafa",
-                            border: "1px solid #ddd",
-                            padding: "1rem",
-                            borderRadius: "8px",
-                            minWidth: "160px",
-                            textAlign: "center",
-                        }}
-                    >
-                        📈 Média Temperatura: {media("temp")} °C
-                    </div>
-                    <div
-                        style={{
-                            background: "#fafafa",
-                            border: "1px solid #ddd",
-                            padding: "1rem",
-                            borderRadius: "8px",
-                            minWidth: "160px",
-                            textAlign: "center",
-                        }}
-                    >
-                        💧 Média Umidade: {media("umidade")} %
-                    </div>
-                    <div
-                        style={{
-                            background: "#fafafa",
-                            border: "1px solid #ddd",
-                            padding: "1rem",
-                            borderRadius: "8px",
-                            minWidth: "160px",
-                            textAlign: "center",
-                        }}
-                    >
-                        💡 Média Luminosidade: {media("light")} lux
-                    </div>
+                    📈 Média Temperatura: {media("temp") ?? "sem dado"} °C
                 </div>
-            )}
+                <div
+                    style={{
+                        background: "#fafafa",
+                        border: "1px solid #ddd",
+                        padding: "1rem",
+                        borderRadius: "8px",
+                        minWidth: "160px",
+                        textAlign: "center",
+                    }}
+                >
+                    💧 Média Umidade: {media("umidade") ?? "sem dado"} %
+                </div>
+                <div
+                    style={{
+                        background: "#fafafa",
+                        border: "1px solid #ddd",
+                        padding: "1rem",
+                        borderRadius: "8px",
+                        minWidth: "160px",
+                        textAlign: "center",
+                    }}
+                >
+                    💡 Média Luminosidade: {media("light") ?? "sem dado"} lux
+                </div>
+            </div>
         </div>
     );
 }
