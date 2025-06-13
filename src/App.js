@@ -142,7 +142,7 @@ function App() {
                         label: "💡 Luminosidade",
                         valor: ultimo.light,
                         unidade: "lux",
-                        status: getStatus(ultimo.light, 30, 60),
+                        status: getStatus(ultimo.light, 300, 600),
                     },
                 ].map((indicador) => (
                     <div
