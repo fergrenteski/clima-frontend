@@ -88,6 +88,11 @@ function App() {
         }
     };
 
+    const media = (campo) =>
+        dados.length
+            ? (dados.reduce((acc, item) => acc + item[campo], 0) / dados.length).toFixed(1)
+            : "--";
+
     return (
         <div style={{ padding: "1rem", fontFamily: "sans-serif", position: "relative" }}>
             <h2 style={{ textAlign: "center" }}>📊 Dados do ESP32</h2>
@@ -212,6 +217,57 @@ function App() {
                     <Line type="monotone" dataKey="light" stroke="#00c49f" name="Luz" />
                 </LineChart>
             </ResponsiveContainer>
+
+            {/* Médias dos dados */}
+            {dados.length > 0 && (
+                <div
+                    style={{
+                        marginTop: "1rem",
+                        display: "flex",
+                        justifyContent: "center",
+                        gap: "1rem",
+                        flexWrap: "wrap",
+                        fontWeight: "bold",
+                    }}
+                >
+                    <div
+                        style={{
+                            background: "#fafafa",
+                            border: "1px solid #ddd",
+                            padding: "1rem",
+                            borderRadius: "8px",
+                            minWidth: "160px",
+                            textAlign: "center",
+                        }}
+                    >
+                        📈 Média Temperatura: {media("temp")} °C
+                    </div>
+                    <div
+                        style={{
+                            background: "#fafafa",
+                            border: "1px solid #ddd",
+                            padding: "1rem",
+                            borderRadius: "8px",
+                            minWidth: "160px",
+                            textAlign: "center",
+                        }}
+                    >
+                        💧 Média Umidade: {media("umidade")} %
+                    </div>
+                    <div
+                        style={{
+                            background: "#fafafa",
+                            border: "1px solid #ddd",
+                            padding: "1rem",
+                            borderRadius: "8px",
+                            minWidth: "160px",
+                            textAlign: "center",
+                        }}
+                    >
+                        💡 Média Luminosidade: {media("light")} lux
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
