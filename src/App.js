@@ -16,31 +16,41 @@ function App() {
     const [contador, setContador] = useState(20);
     const [intervaloMinutos, setIntervaloMinutos] = useState(10);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const fetchDados = () => {
-        axios
-            .get(`https://clima-backend-xi.vercel.app/api/dados?minutos=${intervaloMinutos}`)
-            .then((res) => {
-                const convertidos = res.data.map((item) => ({
-                    ...item,
-                    temp: parseFloat(item.temp),
-                    umidade: parseFloat(item.umidade),
-                    light: parseFloat(item.light),
-                    timestamp: new Date(item.timestamp).toLocaleString("pt-BR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                    }),
-                }));
-                setDados(convertidos);
-            })
-            .catch((err) => console.error(err));
-    };
-
     useEffect(() => {
+        const fetchDados = () => {
+            axios
+                .get(`https://clima-backend-xi.vercel.app/api/dados?minutos=${intervaloMinutos}`)
+                .then((res) => {
+                    const convertidos = res.data.map((item) => {
+                        const ts = new Date(item.timestamp);
+                        const localDate = new Date(ts.getTime() - 3 * 60 * 60 * 1000);
+                        return {
+                            ...item,
+                            timestampOriginal: item.timestamp,
+                            timestamp: localDate.toLocaleString("pt-BR", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                            }),
+                            temp: parseFloat(item.temp),
+                            umidade: parseFloat(item.umidade),
+                            light: parseFloat(item.light),
+                        };
+                    });
+
+                    convertidos.sort(
+                        (a, b) => new Date(a.timestampOriginal) - new Date(b.timestampOriginal)
+                    );
+
+                    setDados(convertidos);
+                })
+                .catch((err) => console.error(err));
+        };
+
         fetchDados();
+        setContador(20);
 
         const fetchInterval = setInterval(() => {
             fetchDados();
@@ -55,7 +65,28 @@ function App() {
             clearInterval(fetchInterval);
             clearInterval(countdownInterval);
         };
-    }, [fetchDados, intervaloMinutos]);
+    }, [intervaloMinutos]);
+
+    const ultimo = dados[dados.length - 1];
+
+    const getStatus = (valor, min, max) => {
+        if (valor >= min && valor <= max) return "ideal";
+        if (valor < min) return "baixo";
+        return "alto";
+    };
+
+    const getCor = (status) => {
+        switch (status) {
+            case "ideal":
+                return "#00c853"; // verde
+            case "baixo":
+                return "#ffa000"; // laranja
+            case "alto":
+                return "#d32f2f"; // vermelho
+            default:
+                return "#ccc";
+        }
+    };
 
     return (
         <div style={{ padding: "1rem", fontFamily: "sans-serif", position: "relative" }}>
@@ -66,6 +97,7 @@ function App() {
                 style={{
                     position: "absolute",
                     top: 10,
+                    opacity: 0.5,
                     right: 10,
                     background: "#eee",
                     padding: "0.5rem 1rem",
@@ -77,9 +109,77 @@ function App() {
                 ⏳ Atualiza em: {contador}s
             </div>
 
+            {/* Indicadores de conforto */}
+            {ultimo && (
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        gap: "1rem",
+                        marginBottom: "1rem",
+                        flexWrap: "wrap",
+                    }}
+                >
+                    {[
+                        {
+                            label: "🌡️ Temperatura",
+                            valor: ultimo.temp,
+                            unidade: "°C",
+                            status: getStatus(ultimo.temp, 18, 22),
+                        },
+                        {
+                            label: "💧 Umidade",
+                            valor: ultimo.umidade,
+                            unidade: "%",
+                            status: getStatus(ultimo.umidade, 40, 60),
+                        },
+                        {
+                            label: "💡 Luminosidade",
+                            valor: ultimo.light,
+                            unidade: "lux",
+                            status: getStatus(ultimo.light, 300, 600),
+                        },
+                    ].map((indicador) => (
+                        <div
+                            key={indicador.label}
+                            style={{
+                                background: getCor(indicador.status),
+                                color: "#fff",
+                                padding: "1rem",
+                                borderRadius: "8px",
+                                minWidth: "150px",
+                                textAlign: "center",
+                                boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                                fontWeight: "bold",
+                            }}
+                        >
+                            <div>{indicador.label}</div>
+                            <div style={{ fontSize: "1.5rem" }}>
+                                {indicador.valor} {indicador.unidade}
+                            </div>
+                            <div style={{ fontSize: "0.9rem" }}>
+                                {indicador.status === "ideal"
+                                    ? "✅ Ideal"
+                                    : indicador.status === "baixo"
+                                        ? "⚠️ Baixo"
+                                        : "⚠️ Alto"}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             {/* Botões de seleção de intervalo */}
-            <div style={{ textAlign: "center", marginBottom: "1rem" }}>
-                {[10, 30, 60, 120].map((min) => (
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: "0.5rem",
+                    marginBottom: "1rem",
+                    flexWrap: "wrap",
+                }}
+            >
+                {[5, 10, 30].map((min) => (
                     <button
                         key={min}
                         onClick={() => setIntervaloMinutos(min)}
@@ -99,6 +199,7 @@ function App() {
                 ))}
             </div>
 
+            {/* Gráfico */}
             <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={dados}>
                     <CartesianGrid strokeDasharray="3 3" />
