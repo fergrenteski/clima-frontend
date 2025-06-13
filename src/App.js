@@ -266,8 +266,52 @@ function App() {
                     💡 Média Luminosidade: {media("light") ?? "sem dado"} lux
                 </div>
             </div>
+
+            {/* Lista completa de leituras */}
+            <div
+                style={{
+                    marginTop: "2rem",
+                    padding: "1rem",
+                    maxWidth: "760px",
+                    margin: "20px auto",
+                    background: "#f9f9f9",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                }}
+            >
+                <h3 style={{ marginBottom: "1rem", textAlign: "center" }}>📋 Lista de Leituras</h3>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+                    <thead>
+                    <tr style={{ backgroundColor: "#eee", textAlign: "left" }}>
+                        <th style={{ padding: "0.5rem", borderBottom: "1px solid #ccc" }}>Data/Hora</th>
+                        <th style={{ padding: "0.5rem", borderBottom: "1px solid #ccc" }}>🌡️ Temperatura (°C)</th>
+                        <th style={{ padding: "0.5rem", borderBottom: "1px solid #ccc" }}>💧 Umidade (%)</th>
+                        <th style={{ padding: "0.5rem", borderBottom: "1px solid #ccc" }}>💡 Luminosidade (lux)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {dados.map((item, index) => (
+                        <tr key={index}>
+                            <td style={{ padding: "0.5rem", borderBottom: "1px solid #eee" }}>
+                                {item.timestamp}
+                            </td>
+                            <td style={{ padding: "0.5rem", borderBottom: "1px solid #eee" }}>
+                                {item.temp.toFixed(1)}
+                            </td>
+                            <td style={{ padding: "0.5rem", borderBottom: "1px solid #eee" }}>
+                                {item.umidade.toFixed(1)}
+                            </td>
+                            <td style={{ padding: "0.5rem", borderBottom: "1px solid #eee" }}>
+                                {item.light.toFixed(1)}
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
+
 }
 
 export default App;
